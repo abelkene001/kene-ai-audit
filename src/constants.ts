@@ -1,11 +1,12 @@
-import { DiscoveryStep } from './types';
+import { DiscoveryStep, Intel } from './types';
 
 export const industries = [
     "Retail & E-commerce",
     "Logistics & Supply Chain",
     "Real Estate & Development",
     "B2B Professional Services",
-    "Manufacturing & Production"
+    "Manufacturing & Production",
+    "Hospitality"
 ];
 
 export const discoverySteps: DiscoveryStep[] = [
@@ -14,6 +15,39 @@ export const discoverySteps: DiscoveryStep[] = [
         fields: [
             { key: 'businessName', label: 'Registered Entity Name', type: 'text', placeholder: 'e.g. Nexus Logistics Ltd' },
             { key: 'industry', label: 'Primary Business Vertical', type: 'select', options: industries }
+        ]
+    },
+    {
+        title: "Retail Diagnostics",
+        fields: [
+            {
+                key: 'paymentMethod',
+                label: 'Payment Reconciliation Process',
+                type: 'select',
+                options: ['Manual Bank Transfer Verification', 'Automated Gateway (Paystack, etc)', 'Pay On Delivery'],
+                condition: (intel: Intel) => intel.industry === 'Retail & E-commerce'
+            },
+            {
+                key: 'inventoryMethod',
+                label: 'Inventory Synchronization',
+                type: 'select',
+                options: ['No Sync (Inventory Ghosting)', 'Periodic Manual Sync', 'Real-time Automated Sync'],
+                condition: (intel: Intel) => intel.industry === 'Retail & E-commerce'
+            },
+            {
+                key: 'salesChannel',
+                label: 'Primary Sales Channel',
+                type: 'select',
+                options: ['Instagram/WhatsApp DMs', 'Basic E-commerce Site', 'Physical Store Only'],
+                condition: (intel: Intel) => intel.industry === 'Retail & E-commerce'
+            },
+            {
+                key: 'competitorMonitoring',
+                label: 'Competitor Price Intelligence',
+                type: 'select',
+                options: ['No Tracking (Price Blindness)', 'Manual Spot-Checks', 'Automated Price Scrapers'],
+                condition: (intel: Intel) => intel.industry === 'Retail & E-commerce'
+            }
         ]
     },
     {
