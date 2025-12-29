@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import {
     BrainCircuit, ChevronRight, ChevronLeft, Zap, Globe, Cpu, Database, LayoutDashboard,
-    TrendingUp, Clock, AlertCircle, CheckCircle2, ShieldX, BarChart3, Component
+    TrendingUp, Clock, AlertCircle, CheckCircle2, ShieldX, BarChart3, Component,
+    ArrowRight, Lock, FileText, Check
 } from 'lucide-react';
 import { discoverySteps } from './constants';
 import { Intel, AuditResult } from './types';
@@ -58,33 +59,29 @@ const App = () => {
         setView('analyzing');
         setLoading(true);
 
-        const retailSystemPrompt = `You are Kène, a world-class Business Efficiency Architect specializing in the Nigerian Retail & E-commerce sector.
-        Analyze this deep business intel based on my market research. Your response MUST be valid JSON.
+        const retailSystemPrompt = `You are Kène, a world-class Business Efficiency Architect.
+        Analyze this deep business intel for a Nigerian Retail/E-com business.
+        
+        Intel:
+        - Payment: ${intel.paymentMethod}
+        - Inventory: ${intel.inventoryMethod}
+        - Sales: ${intel.salesChannel}
+        - Competitor Tracking: ${intel.competitorMonitoring}
 
-        Intel Breakdown:
-        - paymentMethod: '${intel.paymentMethod}' means they suffer from the "Transfer Verification Leak".
-        - inventoryMethod: '${intel.inventoryMethod}' points to "Inventory Ghosting".
-        - salesChannel: '${intel.salesChannel}' indicates a "DM-to-Order Pipeline Friction".
-        - competitorMonitoring: '${intel.competitorMonitoring}' is "Competitor Pricing Blindness".
+        Task:
+        1. Calculate an "Efficiency Score" (0-100). If they use manual payments/inventory, score should be LOW (30-50).
+        2. Identify 3 "Operational Setbacks" (Current State).
+        3. Propose 3 "Infrastructure Upgrades" (The Solution).
+        4. Calculate Impact: Hours Saved, Revenue Lift %, Churn Reduction %.
+        5. Write a "Pitch": A direct offer to build this specific stack.
 
-        Your Task:
-        1.  **Operational Setbacks**: List 3-4 specific, painful consequences of their current setup. Use the research terms.
-        2.  **The Winning Infrastructure (Roadmap)**: Propose a 3-4 step high-ticket infrastructure solution. Each step must have a 'title', a 'desc', and an 'icon' ('Website', 'Automation', 'Scraper', 'Dashboard').
-        3.  **Economic Impact**:
-            - "hours": Calculate labor recovery. Automating payments saves 20-30 hours/mo.
-            - "rev": Calculate revenue lift. Real-time responses give a 2.5x conversion boost.
-            - "churn": Calculate churn reduction. Inventory sync reduces refunds by 15%.
-        4.  **The Kène Summary**: A 3-sentence high-level strategic overview.
-        5.  **The Pitch**: A personalized closing positioning me as the only one who can build this "Dynamic Dashboard" or "Automated Reconciliation Engine".
+        Response JSON: { "score": 0, "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
 
-        JSON Structure: { "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
-
-        const genericSystemPrompt = `You are Kène, a world-class Business Efficiency Architect. Analyze this deep business intel and return a JSON object. The tone must be professional, authoritative, and consultative. Response MUST be valid JSON: { "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "Default" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
+        const genericSystemPrompt = `You are Kène, a world-class Business Efficiency Architect. Analyze this intel. Return JSON: { "score": 45, "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "Default" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
 
         const systemPrompt = intel.industry === 'Retail & E-commerce' ? retailSystemPrompt : genericSystemPrompt;
 
         try {
-            // Reverted to the previously working model version
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -100,9 +97,9 @@ const App = () => {
             setAuditResult(data);
             setView('report');
         } catch (err) {
-            console.error("API Error or JSON parsing failed:", err);
+            console.error(err);
             setView('discovery');
-            alert("Intelligence calibration failed. The AI model may have returned an invalid structure. Please try again.");
+            alert("Analysis failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -113,6 +110,7 @@ const App = () => {
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#e2b619] selection:text-black">
 
+            {/* Landing & Discovery Views (Unchanged) */}
             {view === 'landing' && (
                 <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900 to-[#050505]">
                     <div className="w-24 h-24 bg-[#e2b619] rounded-[2.5rem] flex items-center justify-center mb-10 shadow-[0_0_80px_rgba(226,182,25,0.2)] animate-pulse">
@@ -195,7 +193,7 @@ const App = () => {
             )}
 
             {view === 'analyzing' && (
-                 <div className="min-h-screen flex flex-col items-center justify-center p-12 text-center bg-black">
+                <div className="min-h-screen flex flex-col items-center justify-center p-12 text-center bg-black">
                     <div className="relative w-32 h-32 mb-10">
                         <div className="absolute inset-0 border-[6px] border-[#e2b619]/10 rounded-full"></div>
                         <div className="absolute inset-0 border-[6px] border-[#e2b619] rounded-full border-t-transparent animate-spin"></div>
@@ -208,102 +206,145 @@ const App = () => {
                 </div>
             )}
 
+            {/* NEW AUDIT REPORT UI */}
             {view === 'report' && auditResult && (
-                <div className="max-w-3xl mx-auto p-6 pt-16 pb-32 animate-in fade-in zoom-in-95 duration-500">
-                    <header className="mb-12 text-center">
-                        <h1 className="text-6xl font-black italic tracking-tighter leading-none">{intel.businessName.toUpperCase()}</h1>
-                        <p className="text-neutral-500 font-bold uppercase text-xs mt-2 tracking-widest">{intel.industry}</p>
+                <div className="max-w-4xl mx-auto p-6 pt-12 pb-32 animate-in fade-in zoom-in-95 duration-700">
+                    
+                    {/* Header */}
+                    <header className="flex justify-between items-end mb-16 border-b border-neutral-800 pb-8">
+                        <div>
+                            <div className="text-[#e2b619] text-[10px] font-black uppercase tracking-[0.3em] mb-2">Confidential Audit Report</div>
+                            <h1 className="text-5xl font-black italic tracking-tighter">{intel.businessName.toUpperCase()}</h1>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-neutral-500 text-xs font-bold uppercase tracking-widest">Generated By</div>
+                            <div className="text-white font-black text-xl">Kène Engine v4.0</div>
+                        </div>
                     </header>
 
-                    <section className="mb-16">
-                        <h3 className="text-xs font-black uppercase text-neutral-500 tracking-[0.3em] mb-6 text-center">
-                           Executive Summary
-                        </h3>
-                        <p className="text-xl font-bold italic text-neutral-200 leading-relaxed text-center max-w-2xl mx-auto">
-                            "{auditResult.summary}"
-                        </p>
-                    </section>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-center">
-                        <div className="bg-neutral-900/50 p-8 rounded-[2.5rem] border border-neutral-800">
-                            <Clock className="text-[#e2b619] mb-4 w-6 h-6 mx-auto" />
-                            <div className="text-5xl font-black tracking-tighter text-white">{auditResult.impact.hours}<span className="text-2xl">hr</span></div>
-                            <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em] mt-2">Capacity Recovered / Mo</div>
+                    {/* SECTION 1: THE DIAGNOSIS (Current State) */}
+                    <section className="mb-20">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center text-red-500"><AlertCircle size={16} /></div>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">01. Current Operational State</h2>
                         </div>
-                         <div className="bg-[#e2b619] p-8 rounded-[2.5rem] text-black">
-                            <TrendingUp className="text-black mb-4 w-6 h-6 mx-auto" />
-                            <div className="text-5xl font-black tracking-tighter">+{auditResult.impact.rev}<span className="text-2xl">%</span></div>
-                            <div className="text-[10px] font-black uppercase text-black/60 tracking-[0.2em] mt-2">Revenue Growth</div>
-                        </div>
-                        <div className="bg-neutral-900/50 p-8 rounded-[2.5rem] border border-neutral-800">
-                            <ShieldX className="text-[#e2b619] mb-4 w-6 h-6 mx-auto" />
-                            <div className="text-5xl font-black tracking-tighter text-white">-{auditResult.impact.churn}<span className="text-2xl">%</span></div>
-                            <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em] mt-2">Churn Reduction</div>
-                        </div>
-                    </div>
 
-                    <section className="space-y-6 mb-16">
-                        <h3 className="text-xs font-black uppercase text-neutral-500 tracking-[0.3em] mb-6 text-center">Proposed Infrastructure</h3>
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Efficiency Score Gauge */}
+                            <div className="bg-neutral-900/50 rounded-3xl p-8 border border-neutral-800 flex flex-col items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent"></div>
+                                <div className="relative z-10 text-center">
+                                    <div className="text-6xl font-black text-white mb-2">{auditResult.score}/100</div>
+                                    <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em]">Efficiency Score</div>
+                                </div>
+                                {/* Simple Gauge Visual */}
+                                <div className="w-full h-2 bg-neutral-800 rounded-full mt-6 overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-red-500 to-[#e2b619]" style={{ width: `${auditResult.score}%` }}></div>
+                                </div>
+                            </div>
+
+                            {/* Friction Points List */}
+                            <div className="md:col-span-2 space-y-4">
+                                {auditResult.setbacks.map((setback, i) => (
+                                    <div key={i} className="bg-neutral-900/30 p-6 rounded-2xl border-l-4 border-red-500 flex items-start gap-4">
+                                        <div className="mt-1 text-red-500"><ShieldX size={20} /></div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-red-200 uppercase tracking-wider mb-1">Critical Friction Point</h4>
+                                            <p className="text-neutral-400 text-sm font-medium leading-relaxed">{setback}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* SECTION 2: THE BLUEPRINT (Solution) */}
+                    <section className="mb-20">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Zap size={16} /></div>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">02. The Infrastructure Solution</h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6">
                             {auditResult.roadmap.map((item, i) => {
                                 const Icon = roadmapIcons[item.icon] || roadmapIcons['Default'];
                                 return (
-                                    <div key={i} className="flex items-center gap-6 p-6 bg-neutral-900/40 border border-neutral-800 rounded-3xl group hover:border-[#e2b619]/50 transition-all">
-                                        <div className="w-14 h-14 rounded-2xl bg-neutral-800 flex items-center justify-center text-[#e2b619] group-hover:bg-[#e2b619] group-hover:text-black transition-all">
-                                            <Icon />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-black text-sm uppercase tracking-tight">{item.title}</h4>
-                                            <p className="text-xs text-neutral-500 mt-1 font-medium">{item.desc}</p>
+                                    <div key={i} className="group relative bg-neutral-900 border border-neutral-800 rounded-3xl p-8 hover:border-[#e2b619] transition-all duration-300">
+                                        <div className="absolute top-8 right-8 text-neutral-800 font-black text-6xl opacity-20 group-hover:text-[#e2b619] group-hover:opacity-10 transition-all">0{i+1}</div>
+                                        <div className="flex items-start gap-6 relative z-10">
+                                            <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-[#e2b619] border border-neutral-800 group-hover:scale-110 transition-transform shadow-2xl">
+                                                <Icon size={32} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-black uppercase tracking-tight mb-2 group-hover:text-[#e2b619] transition-colors">{item.title}</h3>
+                                                <p className="text-neutral-400 leading-relaxed max-w-xl">{item.desc}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
+
+                        {/* Projected Impact Metrics */}
+                        <div className="grid grid-cols-3 gap-4 mt-8">
+                            <div className="bg-[#e2b619] text-black p-6 rounded-2xl text-center">
+                                <div className="text-3xl font-black">{auditResult.impact.hours}hr+</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">Time Reclaimed</div>
+                            </div>
+                            <div className="bg-neutral-800 p-6 rounded-2xl text-center border border-neutral-700">
+                                <div className="text-3xl font-black text-[#e2b619]">{auditResult.impact.rev}%</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500">Revenue Lift</div>
+                            </div>
+                            <div className="bg-neutral-800 p-6 rounded-2xl text-center border border-neutral-700">
+                                <div className="text-3xl font-black text-white">-{auditResult.impact.churn}%</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500">Churn Reduction</div>
+                            </div>
+                        </div>
                     </section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4" /> Operational Setbacks
-                            </h4>
-                            <ul className="space-y-3">
-                                {auditResult.setbacks.map((s, i) => (
-                                    <li key={i} className="text-xs text-neutral-400 font-bold border-l-2 border-red-500/30 pl-4">{s}</li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase text-green-500 tracking-widest flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4" /> Scalability Wins
-                            </h4>
-                            <ul className="space-y-3">
-                                {auditResult.wins.map((w, i) => (
-                                    <li key={i} className="text-xs text-neutral-400 font-bold border-l-2 border-green-500/30 pl-4">{w}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
+                    {/* SECTION 3: THE OFFER (Pitch) */}
+                    <section className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#e2b619] to-[#b89414] transform -skew-y-2 rounded-[3rem] opacity-10"></div>
+                        <div className="bg-neutral-900 border border-neutral-800 rounded-[2.5rem] p-10 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                                <BrainCircuit size={200} />
+                            </div>
+                            
+                            <div className="relative z-10">
+                                <div className="inline-flex items-center gap-2 bg-[#e2b619]/10 text-[#e2b619] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
+                                    <Lock size={12} /> Priority Access Offer
+                                </div>
+                                
+                                <h2 className="text-3xl font-black italic tracking-tighter mb-6">"Let's Build This Engine."</h2>
+                                <p className="text-lg text-neutral-300 leading-relaxed mb-10 max-w-2xl border-l-4 border-[#e2b619] pl-6">
+                                    {auditResult.pitch}
+                                </p>
 
-                    <section className="bg-white p-10 rounded-[3.5rem] text-black space-y-8 shadow-[0_40px_100px_rgba(226,182,25,0.15)] relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-10 opacity-5">
-                            <BrainCircuit className="w-40 h-40" />
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <button 
+                                        onClick={() => window.open(`https://wa.me/2348061952248?text=I've reviewed the audit for ${intel.businessName}. I'm ready to deploy the ${auditResult.impact.hours}hr recovery roadmap.`)}
+                                        className="flex-1 bg-[#e2b619] text-black font-black py-5 rounded-xl flex items-center justify-center gap-3 hover:bg-white transition-all hover:scale-[1.02] shadow-lg shadow-[#e2b619]/20"
+                                    >
+                                        DEPLOY INFRASTRUCTURE <ArrowRight size={20} />
+                                    </button>
+                                    <button 
+                                        onClick={() => window.print()}
+                                        className="px-8 py-5 bg-neutral-800 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-700 transition-all"
+                                    >
+                                        <FileText size={20} /> SAVE REPORT
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <h3 className="text-3xl font-black italic tracking-tighter leading-none">Architect's Final Recommendation</h3>
-                        <p className="text-lg font-bold leading-relaxed border-l-4 border-[#e2b619] pl-6 italic">
-                            "{auditResult.pitch}"
-                        </p>
-                        <button
-                            className="w-full bg-black text-[#e2b619] font-black py-6 rounded-2xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-all shadow-2xl"
-                            onClick={() => window.open(`https://wa.me/2348061952248?text=I've reviewed the Kène Audit for ${intel.businessName}. Let's deploy the ${auditResult.impact.hours}hr recovery roadmap.`)}
-                        >
-                            DEPLOY INFRASTRUCTURE <Zap className="w-5 h-5 fill-current" />
-                        </button>
                     </section>
 
-                    <footer className="text-center py-12 mt-16 space-y-4">
-                        <p className="text-[9px] font-black uppercase text-neutral-700 tracking-[0.5em]">Kène Intelligence // Authorized Access Only</p>
+                    <footer className="text-center mt-20 opacity-30">
+                        <div className="flex justify-center gap-4 mb-4">
+                            <Globe size={16} /> <Cpu size={16} /> <Database size={16} />
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.4em]">Kène Intelligence Systems // 2025</p>
                     </footer>
+
                 </div>
             )}
         </div>

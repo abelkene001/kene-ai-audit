@@ -19,13 +19,14 @@ export interface Intel {
 }
 
 export interface AuditResult {
+    score: number; // 0-100 Operational Efficiency Score
     wins: string[];
     setbacks: string[];
     roadmap: { title: string; desc: string; icon: string }[];
     impact: {
         hours: number;
         rev: number;
-        churn: number; // New metric from research
+        churn: number;
     };
     summary: string;
     pitch: string;
