@@ -11,7 +11,19 @@ export interface Intel {
     scrapingUse: string;
     primaryPain: string;
 
-    // Dynamic fields for specific sectors
+    // Retail & E-commerce Fields
+    paymentMethod?: string;
+    inventoryMethod?: string;
+    salesChannel?: string;
+    competitorMonitoring?: string;
+
+    // Real Estate & Development Fields
+    leadResponseTime?: string;
+    transparencyMethod?: string;
+    inventoryGovernance?: string;
+    marketAwareness?: string;
+
+    // Dynamic fields for other sectors
     [key: string]: string | number | undefined;
 }
 
