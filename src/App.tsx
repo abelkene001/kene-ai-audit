@@ -4,7 +4,7 @@ import {
     TrendingUp, Clock, AlertCircle, CheckCircle2, ShieldX, BarChart3, Component,
     ArrowRight, Lock, FileText, Check
 } from 'lucide-react';
-import { discoverySteps } from './constants';
+import { getSectorConfig } from './sectors';
 import { Intel, AuditResult } from './types';
 
 const apiKey = process.env.REACT_APP_GEMINI_API_KEY || "";
@@ -39,12 +39,8 @@ const App = () => {
         competitorMonitoring: 'No Tracking (Price Blindness)',
     });
 
-    const activeSteps = useMemo(() => {
-        return discoverySteps.map(s => ({
-            ...s,
-            fields: s.fields.filter(f => !f.condition || f.condition(intel))
-        })).filter(s => s.fields.length > 0);
-    }, [intel.industry]);
+    const sectorConfig = useMemo(() => getSectorConfig(intel.industry), [intel.industry]);
+    const activeSteps = sectorConfig.discoverySteps;
 
     const handleNext = () => {
         if (step < activeSteps.length - 1) setStep(step + 1);
@@ -59,27 +55,7 @@ const App = () => {
         setView('analyzing');
         setLoading(true);
 
-        const retailSystemPrompt = `You are Kène, a world-class Business Efficiency Architect.
-        Analyze this deep business intel for a Nigerian Retail/E-com business.
-        
-        Intel:
-        - Payment: ${intel.paymentMethod}
-        - Inventory: ${intel.inventoryMethod}
-        - Sales: ${intel.salesChannel}
-        - Competitor Tracking: ${intel.competitorMonitoring}
-
-        Task:
-        1. Calculate an "Efficiency Score" (0-100). If they use manual payments/inventory, score should be LOW (30-50).
-        2. Identify 3 "Operational Setbacks" (Current State).
-        3. Propose 3 "Infrastructure Upgrades" (The Solution).
-        4. Calculate Impact: Hours Saved, Revenue Lift %, Churn Reduction %.
-        5. Write a "Pitch": A direct offer to build this specific stack.
-
-        Response JSON: { "score": 0, "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
-
-        const genericSystemPrompt = `You are Kène, a world-class Business Efficiency Architect. Analyze this intel. Return JSON: { "score": 45, "wins": [], "setbacks": [], "roadmap": [{ "title": "", "desc": "", "icon": "Default" }], "impact": { "hours": 0, "rev": 0, "churn": 0 }, "summary": "", "pitch": "" }`;
-
-        const systemPrompt = intel.industry === 'Retail & E-commerce' ? retailSystemPrompt : genericSystemPrompt;
+        const systemPrompt = sectorConfig.generateSystemPrompt(intel);
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
