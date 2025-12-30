@@ -87,8 +87,9 @@ export const realEstateSector: SectorConfig = {
         2. Clear problems explained with real-life examples (wins and setbacks)
         3. Simple steps to improve the business (roadmap)
         4. Visual-style metrics (time saved, money protected, errors reduced)
-        5. A short friendly summary
-        6. A warm closing message offering help (pitch)
+        5. A list of "Scaling Potential" items (what happens when they hit 100 score)
+        6. A short friendly summary
+        7. A warm closing message offering help (pitch)
 
         JSON Structure:
         {
@@ -137,6 +138,13 @@ export const realEstateSector: SectorConfig = {
             "refund_drop": "Zero double-booking errors",
             "stress_level": "Calm and organized"
           },
+
+          "scaling_potential": [
+            "You can manage multiple projects without confusion",
+            "Investors will trust you with bigger funds automatically",
+            "You can sell to diaspora clients without meeting them",
+            "Your sales team becomes 10x more efficient"
+          ],
 
           "summary": "You are building great things, but the admin work is slowing you down. By letting a system handle the updates and tracking, you can focus on closing deals and building more.",
 

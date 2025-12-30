@@ -87,8 +87,9 @@ export const retailSector: SectorConfig = {
         2. Clear problems explained with real-life examples (wins and setbacks)
         3. Simple steps to improve the business (roadmap)
         4. Visual-style metrics (time saved, money protected, errors reduced)
-        5. A short friendly summary
-        6. A warm closing message offering help (pitch)
+        5. A list of "Scaling Potential" items (what happens when they hit 100 score)
+        6. A short friendly summary
+        7. A warm closing message offering help (pitch)
 
         JSON Structure:
         {
@@ -137,6 +138,13 @@ export const retailSector: SectorConfig = {
             "refund_drop": "15% fewer refunds",
             "stress_level": "Much lower"
           },
+
+          "scaling_potential": [
+            "You can sell to international customers easily",
+            "You don't need to hire a big team to manage orders",
+            "You can run multiple stores from one dashboard",
+            "Your business makes money while you sleep"
+          ],
 
           "summary": "Your business is working, but it is working too hard. Small manual tasks are stealing time and money quietly. Once these are handled automatically, growth becomes calmer and easier.",
 

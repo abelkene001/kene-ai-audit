@@ -39,6 +39,7 @@ export interface AuditResult {
         refund_drop: string;
         stress_level: string;
     };
+    scaling_potential: string[]; // New field for "what happens when you hit 100"
     summary: string;
     pitch: string;
 }

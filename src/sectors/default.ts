@@ -135,8 +135,9 @@ export const defaultSector: SectorConfig = {
         2. Clear problems explained with real-life examples (wins and setbacks)
         3. Simple steps to improve the business (roadmap)
         4. Visual-style metrics (time saved, money protected, errors reduced)
-        5. A short friendly summary
-        6. A warm closing message offering help (pitch)
+        5. A list of "Scaling Potential" items (what happens when they hit 100 score)
+        6. A short friendly summary
+        7. A warm closing message offering help (pitch)
 
         JSON Structure:
         {
@@ -185,6 +186,13 @@ export const defaultSector: SectorConfig = {
             "refund_drop": "Fewer errors",
             "stress_level": "Drastically reduced"
           },
+
+          "scaling_potential": [
+            "You can expand to new cities without chaos",
+            "You don't need to hire expensive agencies",
+            "Your business runs smoothly even when you are on holiday",
+            "You can attract bigger partners and investors"
+          ],
 
           "summary": "Your business has good bones, but it needs a better nervous system. By connecting the dots and automating the basics, you can stop fighting fires and start building the future.",
 

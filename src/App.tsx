@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
     BrainCircuit, ChevronRight, ChevronLeft, Zap, Globe, Cpu, Database, LayoutDashboard,
     TrendingUp, Clock, AlertCircle, CheckCircle2, ShieldX, BarChart3, Component,
-    ArrowRight, Lock, FileText, Check, Smile, Coins, Activity
+    ArrowRight, Lock, FileText, Check, Smile, Coins, Activity, Frown, Meh, Rocket
 } from 'lucide-react';
 import { getSectorConfig } from './sectors';
 import { Intel, AuditResult } from './types';
@@ -133,6 +133,13 @@ const App = () => {
 
     const currentPhase = activeSteps[step];
     const currentField = currentPhase.fields[subStep];
+
+    // Helper to determine face emoji based on score
+    const getScoreFace = (score: number) => {
+        if (score >= 80) return <Smile size={64} className="text-[#e2b619] animate-bounce" />;
+        if (score >= 50) return <Meh size={64} className="text-[#e2b619] animate-pulse" />;
+        return <Frown size={64} className="text-red-500 animate-pulse" />;
+    };
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#e2b619] selection:text-black">
@@ -299,14 +306,17 @@ const App = () => {
                     <section className="mb-20">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Activity size={16} /></div>
-                            <h2 className="text-2xl font-black uppercase tracking-wide">01. Business Health Today</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">01. Your Business Health</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Efficiency Score Gauge */}
                             <div className="bg-neutral-900/50 rounded-3xl p-8 border border-neutral-800 flex flex-col items-center justify-center relative overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-b from-[#e2b619]/5 to-transparent"></div>
-                                <div className="relative z-10 text-center">
+                                <div className="relative z-10 text-center flex flex-col items-center">
+                                    <div className="mb-4 transition-all duration-500 transform hover:scale-110">
+                                        {getScoreFace(auditResult.score)}
+                                    </div>
                                     <div className="text-6xl font-black text-white mb-2">{auditResult.score}/100</div>
                                     <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em]">Health Score</div>
                                 </div>
@@ -335,7 +345,7 @@ const App = () => {
                     <section className="mb-20">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Zap size={16} /></div>
-                            <h2 className="text-2xl font-black uppercase tracking-wide">02. The Roadmap</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">02. Roadmap to a 100/100 Business</h2>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
@@ -383,7 +393,49 @@ const App = () => {
                         </div>
                     </section>
 
-                    {/* SECTION 3: THE OFFER (Pitch) */}
+                    {/* SECTION 3: SCALING POTENTIAL (What happens at 100) */}
+                    <section className="mb-20">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Rocket size={16} /></div>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">03. When You Hit 100/100</h2>
+                        </div>
+                        
+                        <div className="bg-neutral-900/50 border border-neutral-800 rounded-3xl p-8 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#e2b619]/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                {auditResult.scaling_potential && auditResult.scaling_potential.map((item, i) => (
+                                    <div key={i} className="flex items-start gap-4">
+                                        <div className="mt-1 text-[#e2b619]"><CheckCircle2 size={20} /></div>
+                                        <p className="text-neutral-300 font-medium leading-relaxed">{item}</p>
+                                    </div>
+                                ))}
+                                {!auditResult.scaling_potential && (
+                                    // Fallback if the API hasn't returned this field yet (for older cached responses)
+                                    <>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 text-[#e2b619]"><CheckCircle2 size={20} /></div>
+                                            <p className="text-neutral-300 font-medium leading-relaxed">You can scale to international customers easily</p>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 text-[#e2b619]"><CheckCircle2 size={20} /></div>
+                                            <p className="text-neutral-300 font-medium leading-relaxed">You don't need to hire expensive agencies</p>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 text-[#e2b619]"><CheckCircle2 size={20} /></div>
+                                            <p className="text-neutral-300 font-medium leading-relaxed">Your business runs smoothly even when you are on holiday</p>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 text-[#e2b619]"><CheckCircle2 size={20} /></div>
+                                            <p className="text-neutral-300 font-medium leading-relaxed">You can attract bigger partners and investors</p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* SECTION 4: THE OFFER (Pitch) */}
                     <section className="relative">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#e2b619] to-[#b89414] transform -skew-y-2 rounded-[3rem] opacity-10"></div>
                         <div className="bg-neutral-900 border border-neutral-800 rounded-[2.5rem] p-10 relative overflow-hidden">
