@@ -21,6 +21,7 @@ const roadmapIcons: { [key: string]: React.ElementType } = {
 const App = () => {
     const [view, setView] = useState('landing');
     const [step, setStep] = useState(0);
+    const [subStep, setSubStep] = useState(0); // New state for tracking individual questions within a phase
     const [loading, setLoading] = useState(false);
     const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -44,34 +45,60 @@ const App = () => {
     const sectorConfig = useMemo(() => getSectorConfig(intel.industry), [intel.industry]);
     const activeSteps = sectorConfig.discoverySteps;
 
-    const validateStep = () => {
-        const currentFields = activeSteps[step].fields;
-        const newErrors: { [key: string]: string } = {};
-        let isValid = true;
+    // Calculate total questions across all steps for progress bar
+    const totalQuestions = useMemo(() => {
+        return activeSteps.reduce((acc, step) => acc + step.fields.length, 0);
+    }, [activeSteps]);
 
-        currentFields.forEach(field => {
-            if (!field.optional && !intel[field.key]) {
-                newErrors[field.key] = "Please complete this field to continue.";
-                isValid = false;
-            }
-        });
+    // Calculate current question index
+    const currentQuestionIndex = useMemo(() => {
+        let count = 0;
+        for (let i = 0; i < step; i++) {
+            count += activeSteps[i].fields.length;
+        }
+        return count + subStep + 1;
+    }, [step, subStep, activeSteps]);
 
-        setErrors(newErrors);
-        return isValid;
+    const validateCurrentQuestion = () => {
+        const currentField = activeSteps[step].fields[subStep];
+        if (!currentField.optional && !intel[currentField.key]) {
+            setErrors({ [currentField.key]: "Please complete this field to continue." });
+            return false;
+        }
+        setErrors({});
+        return true;
     };
 
     const handleNext = () => {
-        if (!validateStep()) return;
+        if (!validateCurrentQuestion()) return;
 
-        if (step < activeSteps.length - 1) {
+        const currentPhaseFields = activeSteps[step].fields;
+        
+        // If there are more questions in this phase
+        if (subStep < currentPhaseFields.length - 1) {
+            setSubStep(subStep + 1);
+        } 
+        // If we are at the end of this phase, move to next phase
+        else if (step < activeSteps.length - 1) {
             setStep(step + 1);
-            window.scrollTo(0, 0);
+            setSubStep(0);
+        } 
+        // If we are at the very end
+        else {
+            generateAudit();
         }
-        else generateAudit();
     };
 
     const handleBack = () => {
-        if (step > 0) setStep(step - 1);
+        if (subStep > 0) {
+            setSubStep(subStep - 1);
+        } else if (step > 0) {
+            setStep(step - 1);
+            // Set subStep to the last question of the previous phase
+            setSubStep(activeSteps[step - 1].fields.length - 1);
+        } else {
+            setView('landing');
+        }
     };
 
     const generateAudit = async () => {
@@ -104,12 +131,13 @@ const App = () => {
         }
     };
 
-    const currentStep = activeSteps[step];
+    const currentPhase = activeSteps[step];
+    const currentField = currentPhase.fields[subStep];
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#e2b619] selection:text-black">
 
-            {/* Landing & Discovery Views (Unchanged) */}
+            {/* Landing & Discovery Views */}
             {view === 'landing' && (
                 <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900 to-[#050505]">
                     <div className="w-24 h-24 bg-[#e2b619] rounded-[2.5rem] flex items-center justify-center mb-10 shadow-[0_0_80px_rgba(226,182,25,0.2)] animate-pulse">
@@ -126,83 +154,112 @@ const App = () => {
             )}
 
             {view === 'discovery' && (
-                <div className="max-w-xl mx-auto p-6 pt-20 animate-in slide-in-from-bottom-8">
-                    <div className="flex justify-between items-center mb-12">
-                        <div className="flex gap-2">
-                            {activeSteps.map((_, i) => (
-                                <div key={i} className={`h-1.5 w-8 rounded-full transition-all ${i <= step ? 'bg-[#e2b619]' : 'bg-neutral-800'}`} />
-                            ))}
+                <div className="max-w-xl mx-auto p-6 pt-20 min-h-screen flex flex-col justify-center animate-in slide-in-from-bottom-8">
+                    
+                    {/* Progress Bar */}
+                    <div className="mb-12">
+                        <div className="flex justify-between items-end mb-4">
+                            <span className="text-[10px] font-black text-[#e2b619] uppercase tracking-widest">
+                                {currentPhase.title}
+                            </span>
+                            <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">
+                                {currentQuestionIndex} / {totalQuestions}
+                            </span>
                         </div>
-                        <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Phase 0{step + 1}</span>
+                        <div className="h-1 w-full bg-neutral-900 rounded-full overflow-hidden">
+                            <div 
+                                className="h-full bg-[#e2b619] transition-all duration-500 ease-out"
+                                style={{ width: `${(currentQuestionIndex / totalQuestions) * 100}%` }}
+                            />
+                        </div>
                     </div>
 
-                    <h2 className="text-4xl font-black italic mb-2">{currentStep.title}</h2>
-                    <p className="text-neutral-500 text-sm mb-10">{currentStep.description || "Detailed intel collection for high-accuracy modeling."}</p>
-
-                    <div className="space-y-8">
-                        {currentStep.fields.map((f) => (
-                            <div key={f.key} className="space-y-3">
-                                <label className="text-[10px] font-black uppercase text-[#e2b619] tracking-widest">{f.label}</label>
-                                {f.type === 'text' && (
-                                    <input
-                                        className={`w-full bg-neutral-900 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors[f.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
-                                        placeholder={f.placeholder}
-                                        value={(intel[f.key] as string) || ''}
-                                        onChange={e => {
-                                            setIntel({ ...intel, [f.key]: e.target.value });
-                                            if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
-                                        }}
-                                    />
-                                )}
-                                {f.type === 'select' && f.options && (
-                                    <div className="grid grid-cols-1 gap-3">
-                                        {f.options.map(opt => (
-                                            <button
-                                                key={opt}
-                                                onClick={() => {
-                                                    setIntel({ ...intel, [f.key]: opt });
-                                                    if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
-                                                }}
-                                                className={`p-5 rounded-2xl border-2 text-left text-sm font-bold transition-all ${intel[f.key] === opt
-                                                        ? 'bg-[#e2b619] border-[#e2b619] text-black shadow-lg shadow-[#e2b619]/10'
-                                                        : errors[f.key]
-                                                            ? 'bg-neutral-900 border-red-500/50 text-neutral-400 hover:border-red-500'
-                                                            : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
-                                                    }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                {f.type === 'textarea' && (
-                                    <textarea
-                                        className={`w-full bg-neutral-900 border rounded-2xl p-5 outline-none min-h-[120px] text-lg font-medium ${errors[f.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
-                                        placeholder={f.placeholder}
-                                        value={(intel[f.key] as string) || ''}
-                                        onChange={e => {
-                                            setIntel({ ...intel, [f.key]: e.target.value });
-                                            if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
-                                        }}
-                                    />
-                                )}
-                                {errors[f.key] && (
-                                    <div className="flex items-center gap-2 text-red-500 text-xs font-bold animate-pulse pl-2">
-                                        <AlertCircle size={12} /> {errors[f.key]}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex gap-4 mt-12">
-                        {step > 0 && (
-                            <button onClick={handleBack} className="p-5 bg-neutral-900 rounded-2xl border border-neutral-800">
-                                <ChevronLeft />
-                            </button>
+                    <div className="flex-1 flex flex-col justify-center">
+                        <h2 className="text-3xl md:text-4xl font-black italic mb-4 leading-tight">
+                            {currentField.label}
+                        </h2>
+                        {currentPhase.description && subStep === 0 && (
+                            <p className="text-neutral-500 text-sm mb-8 animate-in fade-in slide-in-from-top-2">
+                                {currentPhase.description}
+                            </p>
                         )}
-                        <button onClick={handleNext} className="flex-1 bg-white text-black font-black py-5 rounded-2xl hover:bg-[#e2b619] transition-all flex items-center justify-center gap-2">
-                            {step === activeSteps.length - 1 ? 'GENERATE AUDIT' : 'CONTINUE'} <ChevronRight className="w-5 h-5" />
+
+                        <div className="space-y-6">
+                            {currentField.type === 'text' && (
+                                <input
+                                    autoFocus
+                                    className={`w-full bg-neutral-900 border rounded-2xl p-6 outline-none transition-all text-xl font-medium ${errors[currentField.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
+                                    placeholder={currentField.placeholder}
+                                    value={(intel[currentField.key] as string) || ''}
+                                    onChange={e => {
+                                        setIntel({ ...intel, [currentField.key]: e.target.value });
+                                        if (errors[currentField.key]) setErrors({});
+                                    }}
+                                    onKeyDown={e => e.key === 'Enter' && handleNext()}
+                                />
+                            )}
+
+                            {currentField.type === 'select' && currentField.options && (
+                                <div className="grid grid-cols-1 gap-3">
+                                    {currentField.options.map((opt, idx) => (
+                                        <button
+                                            key={opt}
+                                            onClick={() => {
+                                                setIntel({ ...intel, [currentField.key]: opt });
+                                                if (errors[currentField.key]) setErrors({});
+                                                // Auto-advance for single selection
+                                                setTimeout(() => {
+                                                    // We need to call handleNext but we can't easily access the latest state inside setTimeout closure without refs or useEffect
+                                                    // So we'll just set the value here. The user can click "Continue" or we can trigger it.
+                                                    // For better UX, let's just select it visually.
+                                                }, 100);
+                                            }}
+                                            className={`p-5 rounded-2xl border-2 text-left text-lg font-bold transition-all animate-in fade-in slide-in-from-bottom-4 ${
+                                                intel[currentField.key] === opt
+                                                    ? 'bg-[#e2b619] border-[#e2b619] text-black shadow-lg shadow-[#e2b619]/10'
+                                                    : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800'
+                                            }`}
+                                            style={{ animationDelay: `${idx * 50}ms` }}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {currentField.type === 'textarea' && (
+                                <textarea
+                                    autoFocus
+                                    className={`w-full bg-neutral-900 border rounded-2xl p-6 outline-none min-h-[160px] text-xl font-medium ${errors[currentField.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
+                                    placeholder={currentField.placeholder}
+                                    value={(intel[currentField.key] as string) || ''}
+                                    onChange={e => {
+                                        setIntel({ ...intel, [currentField.key]: e.target.value });
+                                        if (errors[currentField.key]) setErrors({});
+                                    }}
+                                />
+                            )}
+
+                            {errors[currentField.key] && (
+                                <div className="flex items-center gap-2 text-red-500 text-sm font-bold animate-pulse pl-2">
+                                    <AlertCircle size={16} /> {errors[currentField.key]}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 mt-12 pt-8 border-t border-neutral-900">
+                        <button 
+                            onClick={handleBack} 
+                            className="p-5 bg-neutral-900 rounded-2xl border border-neutral-800 hover:bg-neutral-800 transition-colors"
+                        >
+                            <ChevronLeft />
+                        </button>
+                        <button 
+                            onClick={handleNext} 
+                            className="flex-1 bg-white text-black font-black py-5 rounded-2xl hover:bg-[#e2b619] transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                        >
+                            {currentQuestionIndex === totalQuestions ? 'GENERATE AUDIT' : 'CONTINUE'} <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
