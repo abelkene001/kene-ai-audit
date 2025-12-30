@@ -3,33 +3,50 @@ import { defaultSector } from './default';
 
 // Clone default steps and inject Real Estate specific step
 const realEstateDiscoverySteps: DiscoveryStep[] = [
-    ...defaultSector.discoverySteps.slice(0, 1), // Keep Market Identity
+    ...defaultSector.discoverySteps.slice(0, 1), // Keep Identity
     {
         title: "Development Diagnostics",
+        description: "Let's analyze your property development workflow.",
         fields: [
             {
                 key: 'leadResponseTime',
-                label: 'Lead Response Latency',
+                label: "How quickly do you respond to new leads?",
                 type: 'select',
-                options: ['Instant (Automated < 2 mins)', 'Manual Follow-up (1-4 Hours)', 'Next Day / Irregular']
+                options: [
+                    'Instantly (Automated < 2 mins)', 
+                    'Within a few hours (Manual Follow-up)', 
+                    'The next day or later'
+                ]
             },
             {
                 key: 'transparencyMethod',
-                label: 'Investor Progress Reporting',
+                label: "How do you update investors on project progress?",
                 type: 'select',
-                options: ['WhatsApp Photos / Manual Updates', 'Periodic Email Newsletters', 'Real-time Client Portal / Dashboard']
+                options: [
+                    'I send WhatsApp photos or call them', 
+                    'I send periodic email newsletters', 
+                    'They have a real-time Client Portal'
+                ]
             },
             {
                 key: 'inventoryGovernance',
-                label: 'Unit Availability Tracking',
+                label: "How do you track which units are sold or available?",
                 type: 'select',
-                options: ['Excel / PDF Lists (Shared Manually)', 'Physical Whiteboard / Paper', 'Real-time Cloud Database (Single Source)']
+                options: [
+                    'I use Excel or PDF lists', 
+                    'I write it on a whiteboard or paper', 
+                    'I use a real-time Cloud Database'
+                ]
             },
             {
                 key: 'marketAwareness',
-                label: 'Competitor Price Intelligence',
+                label: "How do you track property prices in your area?",
                 type: 'select',
-                options: ['Word of Mouth / Guesswork', 'Manual Market Research', 'Automated Area Price Feeds']
+                options: [
+                    'Word of mouth / Guesswork', 
+                    'I manually research the market', 
+                    'I use automated tools to track prices'
+                ]
             }
         ]
     },

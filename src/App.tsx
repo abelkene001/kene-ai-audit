@@ -23,27 +23,50 @@ const App = () => {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const [intel, setIntel] = useState<Intel>({
         businessName: '',
         industry: 'Retail & E-commerce',
-        webStatus: 'Standard Website (Static)',
-        automationLevel: '100% Manual Admin',
-        dataMethod: 'Google Sheets/Excel',
-        orderWorkflow: 'WhatsApp/DM Manual',
-        scrapingUse: 'None (Guesswork)',
+        webStatus: '',
+        automationLevel: '',
+        dataMethod: '',
+        orderWorkflow: '',
+        scrapingUse: '',
         primaryPain: '',
-        paymentMethod: 'Manual Bank Transfer Verification',
-        inventoryMethod: 'No Sync (Inventory Ghosting)',
-        salesChannel: 'Instagram/WhatsApp DMs',
-        competitorMonitoring: 'No Tracking (Price Blindness)',
+        paymentMethod: '',
+        inventoryMethod: '',
+        salesChannel: '',
+        competitorMonitoring: '',
+        // Real Estate fields will be undefined initially, handled by || ''
     });
 
     const sectorConfig = useMemo(() => getSectorConfig(intel.industry), [intel.industry]);
     const activeSteps = sectorConfig.discoverySteps;
 
+    const validateStep = () => {
+        const currentFields = activeSteps[step].fields;
+        const newErrors: { [key: string]: string } = {};
+        let isValid = true;
+
+        currentFields.forEach(field => {
+            if (!field.optional && !intel[field.key]) {
+                newErrors[field.key] = "Please complete this field to continue.";
+                isValid = false;
+            }
+        });
+
+        setErrors(newErrors);
+        return isValid;
+    };
+
     const handleNext = () => {
-        if (step < activeSteps.length - 1) setStep(step + 1);
+        if (!validateStep()) return;
+
+        if (step < activeSteps.length - 1) {
+            setStep(step + 1);
+            window.scrollTo(0, 0);
+        }
         else generateAudit();
     };
 
@@ -114,7 +137,7 @@ const App = () => {
                     </div>
 
                     <h2 className="text-4xl font-black italic mb-2">{currentStep.title}</h2>
-                    <p className="text-neutral-500 text-sm mb-10">Detailed intel collection for high-accuracy modeling.</p>
+                    <p className="text-neutral-500 text-sm mb-10">{currentStep.description || "Detailed intel collection for high-accuracy modeling."}</p>
 
                     <div className="space-y-8">
                         {currentStep.fields.map((f) => (
@@ -122,10 +145,13 @@ const App = () => {
                                 <label className="text-[10px] font-black uppercase text-[#e2b619] tracking-widest">{f.label}</label>
                                 {f.type === 'text' && (
                                     <input
-                                        className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-5 focus:border-[#e2b619] outline-none transition-all text-lg font-medium"
+                                        className={`w-full bg-neutral-900 border rounded-2xl p-5 outline-none transition-all text-lg font-medium ${errors[f.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
                                         placeholder={f.placeholder}
-                                        value={intel[f.key] as string}
-                                        onChange={e => setIntel({ ...intel, [f.key]: e.target.value })}
+                                        value={(intel[f.key] as string) || ''}
+                                        onChange={e => {
+                                            setIntel({ ...intel, [f.key]: e.target.value });
+                                            if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
+                                        }}
                                     />
                                 )}
                                 {f.type === 'select' && f.options && (
@@ -133,10 +159,16 @@ const App = () => {
                                         {f.options.map(opt => (
                                             <button
                                                 key={opt}
-                                                onClick={() => setIntel({ ...intel, [f.key]: opt })}
-                                                className={`p-5 rounded-2xl border-2 text-left text-sm font-bold transition-all ${
-                                                    intel[f.key] === opt ? 'bg-[#e2b619] border-[#e2b619] text-black shadow-lg shadow-[#e2b619]/10' : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
-                                                }`}
+                                                onClick={() => {
+                                                    setIntel({ ...intel, [f.key]: opt });
+                                                    if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
+                                                }}
+                                                className={`p-5 rounded-2xl border-2 text-left text-sm font-bold transition-all ${intel[f.key] === opt
+                                                        ? 'bg-[#e2b619] border-[#e2b619] text-black shadow-lg shadow-[#e2b619]/10'
+                                                        : errors[f.key]
+                                                            ? 'bg-neutral-900 border-red-500/50 text-neutral-400 hover:border-red-500'
+                                                            : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                                                    }`}
                                             >
                                                 {opt}
                                             </button>
@@ -145,11 +177,19 @@ const App = () => {
                                 )}
                                 {f.type === 'textarea' && (
                                     <textarea
-                                        className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-5 focus:border-[#e2b619] outline-none min-h-[120px] text-lg font-medium"
+                                        className={`w-full bg-neutral-900 border rounded-2xl p-5 outline-none min-h-[120px] text-lg font-medium ${errors[f.key] ? 'border-red-500 focus:border-red-500' : 'border-neutral-800 focus:border-[#e2b619]'}`}
                                         placeholder={f.placeholder}
-                                        value={intel[f.key] as string}
-                                        onChange={e => setIntel({ ...intel, [f.key]: e.target.value })}
+                                        value={(intel[f.key] as string) || ''}
+                                        onChange={e => {
+                                            setIntel({ ...intel, [f.key]: e.target.value });
+                                            if (errors[f.key]) setErrors({ ...errors, [f.key]: '' });
+                                        }}
                                     />
+                                )}
+                                {errors[f.key] && (
+                                    <div className="flex items-center gap-2 text-red-500 text-xs font-bold animate-pulse pl-2">
+                                        <AlertCircle size={12} /> {errors[f.key]}
+                                    </div>
                                 )}
                             </div>
                         ))}

@@ -48,10 +48,12 @@ export interface Field {
     placeholder?: string;
     options?: string[];
     condition?: (intel: Intel) => boolean;
+    optional?: boolean; // Default is false (required)
 }
 
 export interface DiscoveryStep {
     title: string;
+    description?: string; // Helper text for the phase
     fields: Field[];
 }
 

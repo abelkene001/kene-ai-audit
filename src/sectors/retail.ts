@@ -3,33 +3,50 @@ import { defaultSector } from './default';
 
 // Clone default steps to avoid mutation issues, then inject retail specific step
 const retailDiscoverySteps: DiscoveryStep[] = [
-    ...defaultSector.discoverySteps.slice(0, 1), // Keep Market Identity
+    ...defaultSector.discoverySteps.slice(0, 1), // Keep Identity
     {
         title: "Retail Diagnostics",
+        description: "Specific questions to understand your retail operations.",
         fields: [
             {
                 key: 'paymentMethod',
-                label: 'Payment Reconciliation Process',
+                label: "How do you collect and verify payments?",
                 type: 'select',
-                options: ['Manual Bank Transfer Verification', 'Automated Gateway (Paystack, etc)', 'Pay On Delivery']
+                options: [
+                    'I manually check bank alerts', 
+                    'I use an automated gateway (Paystack/Flutterwave)', 
+                    'I mostly do Pay On Delivery'
+                ]
             },
             {
                 key: 'inventoryMethod',
-                label: 'Inventory Synchronization',
+                label: "How do you keep track of your product stock?",
                 type: 'select',
-                options: ['No Sync (Inventory Ghosting)', 'Periodic Manual Sync', 'Real-time Automated Sync']
+                options: [
+                    'I don’t really track it (I just check shelves)', 
+                    'I update a book or Excel sheet sometimes', 
+                    'It updates automatically when I sell'
+                ]
             },
             {
                 key: 'salesChannel',
-                label: 'Primary Sales Channel',
+                label: "Where do most of your sales happen?",
                 type: 'select',
-                options: ['Instagram/WhatsApp DMs', 'Basic E-commerce Site', 'Physical Store Only']
+                options: [
+                    'Mostly Instagram/WhatsApp DMs', 
+                    'On my website', 
+                    'In my physical store'
+                ]
             },
             {
                 key: 'competitorMonitoring',
-                label: 'Competitor Price Intelligence',
+                label: "How do you decide what price to sell at?",
                 type: 'select',
-                options: ['No Tracking (Price Blindness)', 'Manual Spot-Checks', 'Automated Price Scrapers']
+                options: [
+                    'I just pick a price that feels right', 
+                    'I check what others are selling for manually', 
+                    'I use software to track market prices'
+                ]
             }
         ]
     },
@@ -45,10 +62,10 @@ export const retailSector: SectorConfig = {
         Analyze this deep business intel based on my market research. Your response MUST be valid JSON.
 
         Intel Breakdown:
-        - Payment Method: '${intel.paymentMethod}' (Risk: Transfer Verification Leak)
-        - Inventory Method: '${intel.inventoryMethod}' (Risk: Inventory Ghosting)
-        - Sales Channel: '${intel.salesChannel}' (Risk: DM-to-Order Friction)
-        - Competitor Monitoring: '${intel.competitorMonitoring}' (Risk: Price Blindness)
+        - Payment Method: '${intel.paymentMethod}' (Note: If "I manually check bank alerts", treat as "Manual Bank Transfer Verification". If "I use an automated gateway", treat as "Automated Gateway". If "Pay On Delivery", treat as "Pay On Delivery")
+        - Inventory Method: '${intel.inventoryMethod}' (Note: If "I don’t really track it", treat as "No Sync". If "I update a book", treat as "Periodic Manual Sync". If "It updates automatically", treat as "Real-time Automated Sync")
+        - Sales Channel: '${intel.salesChannel}'
+        - Competitor Monitoring: '${intel.competitorMonitoring}' (Note: If "I just pick a price", treat as "No Tracking". If "I check what others are selling", treat as "Manual Spot-Checks". If "I use software", treat as "Automated Price Scrapers")
         - General Intel: ${JSON.stringify(intel)}
 
         Task:
