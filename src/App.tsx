@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
     BrainCircuit, ChevronRight, ChevronLeft, Zap, Globe, Cpu, Database, LayoutDashboard,
     TrendingUp, Clock, AlertCircle, CheckCircle2, ShieldX, BarChart3, Component,
-    ArrowRight, Lock, FileText, Check
+    ArrowRight, Lock, FileText, Check, Smile, Coins, Activity
 } from 'lucide-react';
 import { getSectorConfig } from './sectors';
 import { Intel, AuditResult } from './types';
@@ -298,17 +298,17 @@ const App = () => {
                     {/* SECTION 1: THE DIAGNOSIS (Current State) */}
                     <section className="mb-20">
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center text-red-500"><AlertCircle size={16} /></div>
-                            <h2 className="text-2xl font-black uppercase tracking-wide">01. Current Operational State</h2>
+                            <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Activity size={16} /></div>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">01. Business Health Today</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Efficiency Score Gauge */}
                             <div className="bg-neutral-900/50 rounded-3xl p-8 border border-neutral-800 flex flex-col items-center justify-center relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#e2b619]/5 to-transparent"></div>
                                 <div className="relative z-10 text-center">
                                     <div className="text-6xl font-black text-white mb-2">{auditResult.score}/100</div>
-                                    <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em]">Efficiency Score</div>
+                                    <div className="text-[10px] font-black uppercase text-neutral-500 tracking-[0.2em]">Health Score</div>
                                 </div>
                                 {/* Simple Gauge Visual */}
                                 <div className="w-full h-2 bg-neutral-800 rounded-full mt-6 overflow-hidden">
@@ -316,13 +316,13 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* Friction Points List */}
+                            {/* Problems List */}
                             <div className="md:col-span-2 space-y-4">
                                 {auditResult.setbacks.map((setback, i) => (
                                     <div key={i} className="bg-neutral-900/30 p-6 rounded-2xl border-l-4 border-red-500 flex items-start gap-4">
                                         <div className="mt-1 text-red-500"><ShieldX size={20} /></div>
                                         <div>
-                                            <h4 className="font-bold text-sm text-red-200 uppercase tracking-wider mb-1">Critical Friction Point</h4>
+                                            <h4 className="font-bold text-sm text-red-200 uppercase tracking-wider mb-1">Friction Point</h4>
                                             <p className="text-neutral-400 text-sm font-medium leading-relaxed">{setback}</p>
                                         </div>
                                     </div>
@@ -335,7 +335,7 @@ const App = () => {
                     <section className="mb-20">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="w-8 h-8 bg-[#e2b619]/20 rounded-full flex items-center justify-center text-[#e2b619]"><Zap size={16} /></div>
-                            <h2 className="text-2xl font-black uppercase tracking-wide">02. The Infrastructure Solution</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-wide">02. The Roadmap</h2>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
@@ -359,18 +359,26 @@ const App = () => {
                         </div>
 
                         {/* Projected Impact Metrics */}
-                        <div className="grid grid-cols-3 gap-4 mt-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
                             <div className="bg-[#e2b619] text-black p-6 rounded-2xl text-center">
-                                <div className="text-3xl font-black">{auditResult.impact.hours}hr+</div>
-                                <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">Time Reclaimed</div>
+                                <div className="flex justify-center mb-2"><Clock size={24} /></div>
+                                <div className="text-xl font-black">{auditResult.impact.time_saved}</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest opacity-70 mt-1">Time Saved</div>
                             </div>
                             <div className="bg-neutral-800 p-6 rounded-2xl text-center border border-neutral-700">
-                                <div className="text-3xl font-black text-[#e2b619]">{auditResult.impact.rev}%</div>
-                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500">Revenue Lift</div>
+                                <div className="flex justify-center mb-2 text-[#e2b619]"><Coins size={24} /></div>
+                                <div className="text-xl font-black text-[#e2b619]">{auditResult.impact.money_protected}</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 mt-1">Money Protected</div>
                             </div>
                             <div className="bg-neutral-800 p-6 rounded-2xl text-center border border-neutral-700">
-                                <div className="text-3xl font-black text-white">-{auditResult.impact.churn}%</div>
-                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500">Churn Reduction</div>
+                                <div className="flex justify-center mb-2 text-white"><TrendingUp size={24} /></div>
+                                <div className="text-xl font-black text-white">{auditResult.impact.sales_growth}</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 mt-1">Sales Growth</div>
+                            </div>
+                             <div className="bg-neutral-800 p-6 rounded-2xl text-center border border-neutral-700">
+                                <div className="flex justify-center mb-2 text-white"><Smile size={24} /></div>
+                                <div className="text-xl font-black text-white">{auditResult.impact.stress_level}</div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-neutral-500 mt-1">Stress Level</div>
                             </div>
                         </div>
                     </section>
@@ -388,17 +396,17 @@ const App = () => {
                                     <Lock size={12} /> Priority Access Offer
                                 </div>
                                 
-                                <h2 className="text-3xl font-black italic tracking-tighter mb-6">"Let's Build This Engine."</h2>
+                                <h2 className="text-3xl font-black italic tracking-tighter mb-6">"Let's Fix This Quietly."</h2>
                                 <p className="text-lg text-neutral-300 leading-relaxed mb-10 max-w-2xl border-l-4 border-[#e2b619] pl-6">
                                     {auditResult.pitch}
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <button 
-                                        onClick={() => window.open(`https://wa.me/2348061952248?text=I've reviewed the audit for ${intel.businessName}. I'm ready to deploy the ${auditResult.impact.hours}hr recovery roadmap.`)}
+                                        onClick={() => window.open(`https://wa.me/2348061952248?text=I've reviewed the audit for ${intel.businessName}. I'm ready to deploy the roadmap.`)}
                                         className="flex-1 bg-[#e2b619] text-black font-black py-5 rounded-xl flex items-center justify-center gap-3 hover:bg-white transition-all hover:scale-[1.02] shadow-lg shadow-[#e2b619]/20"
                                     >
-                                        DEPLOY INFRASTRUCTURE <ArrowRight size={20} />
+                                        START NOW <ArrowRight size={20} />
                                     </button>
                                     <button 
                                         onClick={() => window.print()}

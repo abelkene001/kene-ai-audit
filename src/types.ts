@@ -28,14 +28,16 @@ export interface Intel {
 }
 
 export interface AuditResult {
-    score: number; // 0-100 Operational Efficiency Score
+    score: number; // 0-100 Business Health Score
     wins: string[];
     setbacks: string[];
     roadmap: { title: string; desc: string; icon: string }[];
     impact: {
-        hours: number;
-        rev: number;
-        churn: number;
+        time_saved: string;
+        money_protected: string;
+        sales_growth: string;
+        refund_drop: string;
+        stress_level: string;
     };
     summary: string;
     pitch: string;
