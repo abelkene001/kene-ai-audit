@@ -46,6 +46,7 @@ const defaultDiscoverySteps: DiscoveryStep[] = [
                 label: "How do you keep track of your business data?", 
                 type: 'select', 
                 options: [
+                    'I don’t track my data at all',
                     'Paper records / Notebooks', 
                     'Excel / Google Sheets', 
                     'Scattered WhatsApp notes', 
@@ -58,6 +59,17 @@ const defaultDiscoverySteps: DiscoveryStep[] = [
         title: "Operations",
         description: "Let's look at how you handle your day-to-day workflow.",
         fields: [
+            { 
+                key: 'paymentCollection',
+                label: "How do you typically collect payments?",
+                type: 'select',
+                options: [
+                    'Manual bank transfers',
+                    'Point of Sale (POS)',
+                    'Online payment gateways (Paystack, etc.)',
+                    'Cash payments'
+                ]
+            },
             { 
                 key: 'orderWorkflow', 
                 label: "How do your customers usually find and buy from you?", 
